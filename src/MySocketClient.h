@@ -34,7 +34,6 @@
 ** contact the sales department at qt-sales@nokia.com.
 **
 ****************************************************************************/
-
 #ifndef FORTUNETHREAD_H
 #define FORTUNETHREAD_H
 
@@ -45,17 +44,27 @@ using namespace std;
 #include <QTcpSocket>
 #include <QFile>
 #include <QDir>
+#include "Response.h"
+#include "Htmlwrapper.h"
 
-#include "Objects.h"
+class DirectoryResponse;
+class FileResponse;
+class ErrorResponse;
 
 class MySocketClient : public QThread
 {
     Q_OBJECT
 
 public:
-    MySocketClient(int socketDescriptor, QObject *parent);
+    MySocketClient(int socketDescriptor, QObject *parent, DirectoryResponse *dirResp,
+                   FileResponse *fileResp, ErrorResponse *errorResponse,
+                   HtmlWrapper *htmlResp);
 
     void run();
+    HtmlWrapper *htmlResponse;
+
+
+    //QByteArray block;
 
 signals:
     void error(QTcpSocket::SocketError socketError);
@@ -63,6 +72,10 @@ signals:
 private:
     int socketDescriptor;
     QString text;
+    DirectoryResponse *dirResponse;
+    FileResponse *fileResponse;
+    ErrorResponse *errorResponse;
+
 };
 
 #endif

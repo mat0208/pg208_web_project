@@ -34,15 +34,20 @@
 ** contact the sales department at qt-sales@nokia.com.
 **
 ****************************************************************************/
-
 #include "MySocketClient.h"
 
 #include <QtNetwork>
 
 
-MySocketClient::MySocketClient(int socketDescriptor, QObject *parent)
+MySocketClient::MySocketClient(int socketDescriptor, QObject *parent, DirectoryResponse *dirResp,
+                               FileResponse *fileResp, ErrorResponse *errorResp,
+                               HtmlWrapper *htmlResp)
     : QThread(parent), socketDescriptor(socketDescriptor)
 {
+    dirResponse   = dirResp;
+    fileResponse  = fileResp;
+    errorResponse = errorResp;
+    htmlResponse  = htmlResp;
 }
 
 inline string removeEndLine(string s){
@@ -68,7 +73,7 @@ void MySocketClient::run()
     // SI LE CLIENT N'A PAS EU LE TEMPS DE NOUS TRANSMETTRE SA REQUETE,
     // ON SE MET EN ATTENTE PENDANT 1s
     while (tcpSocket.bytesAvailable() < (int)sizeof(quint16)) {
-        if (!tcpSocket.waitForReadyRead( 1000 )) {
+        if (!tcpSocket.waitForReadyRead( 10000 )) {
                 cout << "(EE) Erreur de time out !" << endl;
                 return;
         }
@@ -110,7 +115,8 @@ void MySocketClient::run()
         }
     }
 
-   QString str = tr("./public_html") + tr(file.c_str());
+   QString str = tr("/home/mat0208lt/Desktop/http_server/pg208_web_project/public_html") + tr(file.c_str());
+   //QString str = tr("public_html") + tr(file.c_str());
    QFile f( str );
    QDir  d( str );
 
@@ -119,10 +125,11 @@ void MySocketClient::run()
    cout << " - isDirectory       : " << d.exists() << endl;
 
    if( f.exists() == false &&  d.exists() == false ){
-       // ERREUR 404 LE FICHIER N'EXISTE PAS...
+        this->errorResponse->printError( 404, this );
+        cout << "ERROR 404 : UNKNOWN FILE OR DIRECTORY" << endl;
 
    }else if( d.exists() == true ){
-       // C'EST UN REPERTOIRE !
+       this->dirResponse->listDir( d, this );
 
    }else if( f.exists() == true ){
        QFile* file = new QFile( str );
@@ -131,28 +138,19 @@ void MySocketClient::run()
                 delete file;
                 return;
         }
-        tcpSocket.write( file->readAll() );
+        this->fileResponse->readFile( file, this );
         file->close();
 
    }else{
 
    }
 
-//! [2] //! [3]
+   this->htmlResponse->buildPage();
+   tcpSocket.write( this->htmlResponse->page );
+   this->htmlResponse->page.clear();
 
-    /*QByteArray block;
-    QDataStream out(&block, QIODevice::WriteOnly);
-    out.setVersion(QDataStream::Qt_4_0);
-    out << (quint16)0;
-    out << text;
-    out.device()->seek(0);
-    out << (quint16)(block.size() - sizeof(quint16));
-//! [3] //! [4]
-
-    tcpSocket.write(block);*/
-
-    tcpSocket.disconnectFromHost();
-    tcpSocket.waitForDisconnected();
-    cout << "Finishing MySocketClient::run()" << endl;
+   tcpSocket.disconnectFromHost();
+   tcpSocket.waitForDisconnected();
+   cout << "Finishing MySocketClient::run()" << endl;
 }
 //! [4]

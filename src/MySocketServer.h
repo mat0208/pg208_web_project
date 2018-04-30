@@ -40,7 +40,9 @@
 
 #include <QStringList>
 #include <QTcpServer>
-#include "MyFileCache.h"
+#include "Response.h"
+#include "Htmlwrapper.h"
+
 
 class MySocketServer : public QTcpServer
 {
@@ -49,9 +51,14 @@ Q_OBJECT
 public:
         MySocketServer(QObject *parent = 0);
 
+private:
+        Response response;
+        DirectoryResponse dirResponse;
+        FileResponse fileResponse;
+        ErrorResponse errorResponse;
+        HtmlWrapper htmlResponse;
 protected:
     void incomingConnection(qintptr socketDescriptor);
-
 };
 
 #endif

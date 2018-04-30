@@ -52,7 +52,6 @@ int main(int argc, char *argv[])
     // ON CREE UNE BOITE DE DIALOGUE
     Dialog dialog;
 
-    // ON L'AFFICHE...
-    dialog.show();
+    // ON L'AFFICHE...    dialog.show();
     return dialog.exec();
 }

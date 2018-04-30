@@ -8,11 +8,15 @@ TEMPLATE = app
 SOURCES += ./src/main.cpp \
     ./src/MySocketServer.cpp \
     ./src/MySocketClient.cpp \
-    ./src/dialog.cpp
+    ./src/dialog.cpp \
+    src/Response.cpp \
+    src/Htmlwrapper.cpp
 
 HEADERS += ./src/MySocketServer.h \
     ./src/MySocketClient.h \
-    ./src/dialog.h
+    ./src/dialog.h \
+    src/Response.h \
+    src/Htmlwrapper.h
 
 OTHER_FILES += MyQServer.pro
 CONFIG += c++11

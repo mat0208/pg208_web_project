@@ -35,15 +35,14 @@
 **
 ****************************************************************************/
 
-#include <QtGui>
+#include <QtWidgets>
 #include <QtNetwork>
 
 #include <stdlib.h>
 
 #include "dialog.h"
 
-Dialog::Dialog(QWidget *parent)
-    : QDialog(parent)
+Dialog::Dialog(QWidget *parent) : QDialog(parent)
 {
     statusLabel = new QLabel;
     quitButton = new QPushButton(tr("Quit"));

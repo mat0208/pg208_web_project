@@ -37,12 +37,10 @@
 
 #include "MySocketServer.h"
 #include "MySocketClient.h"
-
 #include <stdlib.h>
 
 //! [0]
-MySocketServer::MySocketServer(QObject *parent)
-    : QTcpServer(parent)
+MySocketServer::MySocketServer(QObject *parent) : QTcpServer(parent)
 {
 
 }
@@ -52,7 +50,9 @@ void MySocketServer::incomingConnection(qintptr socketDescriptor)
     cout << "(II) Launching the Network monitor process" << endl;
 
     // CREATION DE L'OBJET EN CHARGE DES REPONSES RESEAU
-    MySocketClient *thread = new MySocketClient(socketDescriptor, this);
+    MySocketClient *thread = new MySocketClient(socketDescriptor, this, &(this->dirResponse),
+                                                &(this->fileResponse), &(this->errorResponse),
+                                                &(this->htmlResponse));
 
     // ON INDIQUE QUE LORSQU'UN CLIENT SE CONNECTE ON DELEGE LA REPONSE
     // AU PROCESSUS DEFINI CI DESSUS...
