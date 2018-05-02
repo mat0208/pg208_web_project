@@ -41,13 +41,14 @@
 
 MySocketClient::MySocketClient(int socketDescriptor, QObject *parent, DirectoryResponse *dirResp,
                                FileResponse *fileResp, ErrorResponse *errorResp,
-                               HtmlWrapper *htmlResp)
+                               HtmlWrapper *htmlResp, bool pagesAvailable)
     : QThread(parent), socketDescriptor(socketDescriptor)
 {
-    dirResponse   = dirResp;
-    fileResponse  = fileResp;
-    errorResponse = errorResp;
-    htmlResponse  = htmlResp;
+    dirResponse    = dirResp;
+    fileResponse   = fileResp;
+    errorResponse  = errorResp;
+    htmlResponse   = htmlResp;
+    pagesAvailable = pagesAvailable;
 }
 
 inline string removeEndLine(string s){
@@ -73,7 +74,7 @@ void MySocketClient::run()
     // SI LE CLIENT N'A PAS EU LE TEMPS DE NOUS TRANSMETTRE SA REQUETE,
     // ON SE MET EN ATTENTE PENDANT 1s
     while (tcpSocket.bytesAvailable() < (int)sizeof(quint16)) {
-        if (!tcpSocket.waitForReadyRead( 10000 )) {
+        if (!tcpSocket.waitForReadyRead( 1000 )) {
                 cout << "(EE) Erreur de time out !" << endl;
                 return;
         }
@@ -100,10 +101,10 @@ void MySocketClient::run()
    cout << "2. : " << ligne << endl;
 
    int pos2 = ligne.find(" ");
-   string file = ligne.substr(0, pos2);
+   string filename = ligne.substr(0, pos2);
    ligne = ligne.substr(pos2+1, ligne.length()-pos2);
 
-   cout << "3. : " << file  << endl;
+   cout << "3. : " << filename  << endl;
    cout << "4. : '" << ligne << "'" << endl;
 
         while( tcpSocket.bytesAvailable() > 0 ){
@@ -115,7 +116,7 @@ void MySocketClient::run()
         }
     }
 
-   QString str = tr("/home/mat0208lt/Desktop/http_server/pg208_web_project/public_html") + tr(file.c_str());
+   QString str = tr("/home/mat0208lt/Desktop/http_server/pg208_web_project/public_html") + tr(filename.c_str());
    //QString str = tr("public_html") + tr(file.c_str());
    QFile f( str );
    QDir  d( str );
@@ -126,20 +127,35 @@ void MySocketClient::run()
 
    if( f.exists() == false &&  d.exists() == false ){
         this->errorResponse->printError( 404, this );
-        cout << "ERROR 404 : UNKNOWN FILE OR DIRECTORY" << endl;
-
    }else if( d.exists() == true ){
-       this->dirResponse->listDir( d, this );
+       if( pagesAvailable || !filename.compare( "/" ) || !filename.compare( "/private/" ) ){
+           this->dirResponse->listDir( d, this );
+       } else{
+           this->htmlResponse->code = 503;
+       }
 
    }else if( f.exists() == true ){
-       QFile* file = new QFile( str );
-        if (!file->open(QIODevice::ReadOnly))
-        {
-                delete file;
-                return;
+        if( !filename.compare( "/private/desactivate.html" ) ){
+            pagesAvailable = false;
+            this->htmlResponse->errorMsg = "Server disabled";
         }
-        this->fileResponse->readFile( file, this );
-        file->close();
+        else if( !filename.compare( "/private/activate.html" ) ){
+            pagesAvailable = true;
+            this->htmlResponse->errorMsg = "Server enabled";
+        }
+        if( pagesAvailable ){
+            QFile* file = new QFile( str );
+             if (!file->open(QIODevice::ReadOnly))
+             {
+                     delete file;
+                     return;
+             }
+            this->fileResponse->readFile( file, this );
+            file->close();
+        } else if( filename.compare( "/private/activate.html" ) ){
+        } else{
+            this->htmlResponse->code = 503;
+        }
 
    }else{
 

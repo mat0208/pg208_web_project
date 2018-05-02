@@ -50,6 +50,7 @@ Q_OBJECT
 
 public:
         MySocketServer(QObject *parent = 0);
+        bool pagesAvailable = true;
 
 private:
         Response response;

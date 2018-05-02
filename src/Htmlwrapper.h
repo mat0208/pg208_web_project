@@ -10,12 +10,13 @@ class HtmlWrapper
 {
 public:
     HtmlWrapper();
+    unsigned int code;
     QByteArray page;
     QByteArray fileContent;
     QStringList directories;
     QStringList files;
     QStringList pictures;
-    QString     errorMsg;
+    QString errorMsg;
 
     void buildPage();
     void clearLists();

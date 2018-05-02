@@ -58,11 +58,12 @@ class MySocketClient : public QThread
 public:
     MySocketClient(int socketDescriptor, QObject *parent, DirectoryResponse *dirResp,
                    FileResponse *fileResp, ErrorResponse *errorResponse,
-                   HtmlWrapper *htmlResp);
+                   HtmlWrapper *htmlResp, bool serverAvailable);
 
     void run();
-    HtmlWrapper *htmlResponse;
 
+    HtmlWrapper *htmlResponse;
+    bool pagesAvailable;
 
     //QByteArray block;
 

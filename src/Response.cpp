@@ -25,6 +25,7 @@ void DirectoryResponse::listDir( QDir dir, MySocketClient *client )
     for (int i = 0; i < dirList.size(); ++i){
         client->htmlResponse->files += dirList.at(i);
     }
+    client->htmlResponse->code = 200;
 }
 
 
@@ -36,6 +37,7 @@ FileResponse::FileResponse()
 void FileResponse::readFile(QFile *file, MySocketClient *client)
 {
     client->htmlResponse->fileContent += file->readAll();
+    client->htmlResponse->code = 200;
 }
 
 ErrorResponse::ErrorResponse()
@@ -45,6 +47,6 @@ ErrorResponse::ErrorResponse()
 void ErrorResponse::printError( unsigned int errorType, MySocketClient *client  )
 {
     if( errorType == 404 ){
-        client->htmlResponse->errorMsg = "ERROR 404 : UNKNOWN FILE OR DIRECTORY\n";
+        client->htmlResponse->code = 404;
     }
 }

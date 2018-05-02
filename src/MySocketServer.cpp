@@ -52,7 +52,7 @@ void MySocketServer::incomingConnection(qintptr socketDescriptor)
     // CREATION DE L'OBJET EN CHARGE DES REPONSES RESEAU
     MySocketClient *thread = new MySocketClient(socketDescriptor, this, &(this->dirResponse),
                                                 &(this->fileResponse), &(this->errorResponse),
-                                                &(this->htmlResponse));
+                                                &(this->htmlResponse), pagesAvailable);
 
     // ON INDIQUE QUE LORSQU'UN CLIENT SE CONNECTE ON DELEGE LA REPONSE
     // AU PROCESSUS DEFINI CI DESSUS...
