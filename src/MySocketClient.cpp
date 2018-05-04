@@ -41,14 +41,15 @@
 
 MySocketClient::MySocketClient(int socketDescriptor, QObject *parent, DirectoryResponse *dirResp,
                                FileResponse *fileResp, ErrorResponse *errorResp,
-                               HtmlWrapper *htmlResp, bool pagesAvailable)
+                               HtmlWrapper *htmlResp, Statistics *stats, bool *serverAvailable)
     : QThread(parent), socketDescriptor(socketDescriptor)
 {
     dirResponse    = dirResp;
     fileResponse   = fileResp;
     errorResponse  = errorResp;
     htmlResponse   = htmlResp;
-    pagesAvailable = pagesAvailable;
+    statistics     = stats;
+    pagesAvailable = serverAvailable;
 }
 
 inline string removeEndLine(string s){
@@ -62,6 +63,9 @@ inline string removeEndLine(string s){
 void MySocketClient::run()
 {
     cout << "Starting MySocketClient::run()" << endl;
+
+    this->statistics->nbReceivedRequests ++;
+
     QTcpSocket tcpSocket;
 
     // ON RECUPERE LE LIEN DE COMMUNICATION AVEC LE CLIENT ET ON QUITTE EN CAS
@@ -85,6 +89,7 @@ void MySocketClient::run()
 
     // ON RECUPERE LA REQUETE ET SA TAILLE
     int lineLength = tcpSocket.readLine(tampon, 65536);
+    this->statistics->nbReceivedBytes += lineLength;
 
     // ON TRANSFORME LA REQUETE SOUS FORME DE STRING
     string ligne( tampon );
@@ -93,28 +98,30 @@ void MySocketClient::run()
     // ON AFFICHE LA COMMANDE A L'ECRAN...
     cout << "COMMANDE : =>" << ligne << "<=" << endl;
 
+    this->statistics->receivedRequests << QString::fromStdString( ligne );
+
    int pos1 = ligne.find(" ");
    string cmde = ligne.substr(0, pos1);
    ligne = ligne.substr(pos1+1, ligne.length()-pos1);
 
-   cout << "1. : " << cmde  << endl;
-   cout << "2. : " << ligne << endl;
+   //cout << "1. : " << cmde  << endl;
+   //cout << "2. : " << ligne << endl;
 
    int pos2 = ligne.find(" ");
    string filename = ligne.substr(0, pos2);
    ligne = ligne.substr(pos2+1, ligne.length()-pos2);
 
-   cout << "3. : " << filename  << endl;
-   cout << "4. : '" << ligne << "'" << endl;
+   //cout << "3. : " << filename  << endl;
+   //cout << "4. : '" << ligne << "'" << endl;
 
-        while( tcpSocket.bytesAvailable() > 0 ){
+       /* while( tcpSocket.bytesAvailable() > 0 ){
         int lineLength = tcpSocket.readLine(tampon, 65536);
         if (lineLength != -1 &&  lineLength != 0) {
                 //cout << "C" << lineLength << " :: " << tampon;
         }else if(lineLength != -1 ){
                 cout << "Nothing for the moment !" << endl;
         }
-    }
+    }*/
 
    QString str = tr("/home/mat0208lt/Desktop/http_server/pg208_web_project/public_html") + tr(filename.c_str());
    //QString str = tr("public_html") + tr(file.c_str());
@@ -126,24 +133,26 @@ void MySocketClient::run()
    cout << " - isDirectory       : " << d.exists() << endl;
 
    if( f.exists() == false &&  d.exists() == false ){
-        this->errorResponse->printError( 404, this );
+       this->errorResponse->printError( 404, this );
+       this->statistics->nb404Errors ++;
    }else if( d.exists() == true ){
-       if( pagesAvailable || !filename.compare( "/" ) || !filename.compare( "/private/" ) ){
+       if( *pagesAvailable || !filename.compare( "/" ) || !filename.compare( "/private/" ) ){
            this->dirResponse->listDir( d, this );
        } else{
            this->htmlResponse->code = 503;
+           this->statistics->nb503Errors ++;
        }
 
    }else if( f.exists() == true ){
         if( !filename.compare( "/private/desactivate.html" ) ){
-            pagesAvailable = false;
+            *pagesAvailable = false;
             this->htmlResponse->errorMsg = "Server disabled";
         }
         else if( !filename.compare( "/private/activate.html" ) ){
-            pagesAvailable = true;
+            *pagesAvailable = true;
             this->htmlResponse->errorMsg = "Server enabled";
         }
-        if( pagesAvailable ){
+        if( *pagesAvailable ){
             QFile* file = new QFile( str );
              if (!file->open(QIODevice::ReadOnly))
              {
@@ -155,15 +164,24 @@ void MySocketClient::run()
         } else if( filename.compare( "/private/activate.html" ) ){
         } else{
             this->htmlResponse->code = 503;
+            this->statistics->nb503Errors ++;
         }
 
    }else{
 
    }
 
-   this->htmlResponse->buildPage();
-   tcpSocket.write( this->htmlResponse->page );
-   this->htmlResponse->page.clear();
+   if( !filename.compare( "/private/statistics.html" ) ){
+       this->htmlResponse->stats = *(this->statistics);
+       this->htmlResponse->buildStatsPage();
+       this->statistics->nbTransmittedBytes += tcpSocket.write( this->htmlResponse->statsPage );
+       this->htmlResponse->statsPage.clear();
+   } else{
+       this->htmlResponse->buildMainPage();
+       this->statistics->nbTransmittedBytes += tcpSocket.write( this->htmlResponse->mainPage );
+       this->htmlResponse->mainPage.clear();
+   }
+
 
    tcpSocket.disconnectFromHost();
    tcpSocket.waitForDisconnected();

@@ -44,8 +44,10 @@ using namespace std;
 #include <QTcpSocket>
 #include <QFile>
 #include <QDir>
+#include <QString>
 #include "Response.h"
 #include "Htmlwrapper.h"
+#include "Statistics.h"
 
 class DirectoryResponse;
 class FileResponse;
@@ -58,14 +60,13 @@ class MySocketClient : public QThread
 public:
     MySocketClient(int socketDescriptor, QObject *parent, DirectoryResponse *dirResp,
                    FileResponse *fileResp, ErrorResponse *errorResponse,
-                   HtmlWrapper *htmlResp, bool serverAvailable);
+                   HtmlWrapper *htmlResp, Statistics *stats, bool *serverAvailable);
 
     void run();
 
     HtmlWrapper *htmlResponse;
-    bool pagesAvailable;
-
-    //QByteArray block;
+    Statistics *statistics;
+    bool *pagesAvailable;
 
 signals:
     void error(QTcpSocket::SocketError socketError);

@@ -10,13 +10,15 @@ SOURCES += ./src/main.cpp \
     ./src/MySocketClient.cpp \
     ./src/dialog.cpp \
     src/Response.cpp \
-    src/Htmlwrapper.cpp
+    src/Htmlwrapper.cpp \
+    src/Statistics.cpp
 
 HEADERS += ./src/MySocketServer.h \
     ./src/MySocketClient.h \
     ./src/dialog.h \
     src/Response.h \
-    src/Htmlwrapper.h
+    src/Htmlwrapper.h \
+    src/Statistics.h
 
 OTHER_FILES += MyQServer.pro
 CONFIG += c++11

@@ -4,80 +4,80 @@ HtmlWrapper::HtmlWrapper()
 {
 }
 
-void HtmlWrapper::buildPage(){
+void HtmlWrapper::buildMainPage(){
     switch( code ){
     case 200:
-        page += "HTTP/1.1";
-        page += " 200 ";
-        page += "OK\r\n\r\n";
-        break;
-    case 404:
-        errorMsg = " ERROR 404 : UNKNOWN FILE OR DIRECTORY ";
-        page += "HTTP/1.1";
-        page += " 404 ";
-        page += "NOT FOUND\r\n\r\n";
+        mainPage += "HTTP/1.1";
+        mainPage += " 200 ";
+        mainPage += "OK\r\n\r\n";
         break;
     case 403:
         errorMsg = " ERROR 403 : FORBIDDEN ACCESS ";
-        page += "HTTP/1.1";
-        page += " 403 ";
-        page += "FORBIDDEN\r\n\r\n";
+        mainPage += "HTTP/1.1";
+        mainPage += " 403 ";
+        mainPage += "FORBIDDEN\r\n\r\n";
+        break;
+    case 404:
+        errorMsg = " ERROR 404 : UNKNOWN FILE OR DIRECTORY ";
+        mainPage += "HTTP/1.1";
+        mainPage += " 404 ";
+        mainPage += "NOT FOUND\r\n\r\n";
         break;
     case 503:
         errorMsg = " ERROR 503 : SERVICE UNAVAILABLE ";
-        page += "HTTP/1.1";
-        page += " 503 ";
-        page += "SERVICE UNAVAILABLE\r\n\r\n";
+        mainPage += "HTTP/1.1";
+        mainPage += " 503 ";
+        mainPage += "SERVICE UNAVAILABLE\r\n\r\n";
         break;
     default:
         errorMsg = " ERROR 500 : INTERNAL ERROR ";
-        page += "HTTP/1.1";
-        page += " 500 ";
-        page += "INTERNAL ERROR\r\n\r\n";
+        mainPage += "HTTP/1.1";
+        mainPage += " 500 ";
+        mainPage += "INTERNAL ERROR\r\n\r\n";
         break;
     }
-    page += "<!DOCTYPE HTML PUBLIC \"-//W3C//DTD HTML 3.2 Final//EN\">";
-    page += "<html>\n";
+    mainPage += "<!DOCTYPE HTML>";
+    mainPage += "<html>\n";
     if( errorMsg.isEmpty() ){
-        page += " <body>\n";
+        mainPage += " <body>\n";
         if( fileContent.isEmpty() ){
-            page += "<table>\n";
-            page += "<tr><th colspan=\"5\"><hr></th></tr>\n";
+            mainPage += "<table>\n";
+            mainPage += "<tr><th colspan=\"5\"><hr></th></tr>\n";
             for( int i = 0; i < directories.size(); i++ ){
-                page += "<tr><td valign=\"top\"><td><a href=\"";
-                page += directories.at( i );
-                page += "/\">";
-                page += directories.at( i );
-                page += "/</a></td>\n";
+                mainPage += "<tr><td valign=\"top\"><td><a href=\"";
+                mainPage += directories.at( i );
+                mainPage += "/\">";
+                mainPage += directories.at( i );
+                mainPage += "/</a></td>\n";
             }
             for( int i = 0; i < files.size(); i++ ){
-                page += "<tr><td valign=\"top\"><td><a href=\"";
-                page += files.at( i );
-                page += "\">";
-                page += files.at( i );
-                page += "</a></td>\n";
+                mainPage += "<tr><td valign=\"top\"><td><a href=\"";
+                mainPage += files.at( i );
+                mainPage += "\">";
+                mainPage += files.at( i );
+                mainPage += "</a></td>\n";
             }
-            page += "<tr><th colspan=\"5\"><hr></th></tr>\n";
-            page += "</table>\n";
+            mainPage += "<tr><th colspan=\"5\"><hr></th></tr>\n";
+            mainPage += "</table>\n";
         } else{
-            page += "<tr><th colspan=\"5\"><hr></th></tr>\n";
-            page += fileContent;
-            page += "<tr><th colspan=\"5\"><hr></th></tr>\n";
+            mainPage += "<tr><th colspan=\"5\"><hr></th></tr>\n";
+            mainPage += fileContent;
+            mainPage += "<tr><th colspan=\"5\"><hr></th></tr>\n";
         }
     } else{
-        page += "<head>\n";
-        page += "<title>";
-        page += errorMsg;
-        page += "</title>";
-        page += "</head>\n";
-        page += "<body>\n";
-        page += "<h1>";
-        page += errorMsg;
-        page += "</h1>";
+        mainPage += "<head>\n";
+        mainPage += "<title>";
+        mainPage += errorMsg;
+        mainPage += "</title>";
+        mainPage += "</head>\n";
+        mainPage += "<body>\n";
+        mainPage += "<h1>";
+        mainPage += errorMsg;
+        mainPage += "</h1>\n";
     }
-    page += "<address>(Ubuntu) Server at 192.168.1.64 Port 8080</address>\n";
-    page += "</body>\n";
-    page += "</html>\n";
+    mainPage += "<address>(Ubuntu) Server at 192.168.1.64 Port 8080</address>\n";
+    mainPage += "</body>\n";
+    mainPage += "</html>\n";
 
     clearLists();
 }
@@ -88,4 +88,106 @@ void HtmlWrapper::clearLists(){
     directories.clear();
     pictures.clear();
     errorMsg.clear();
+}
+
+void HtmlWrapper::buildStatsPage(){
+    statsPage += "HTTP/1.1";
+    statsPage += " 200 ";
+    statsPage += "OK\r\n\r\n";
+
+    statsPage += "<!DOCTYPE html>\
+                  <html>\
+                  <head>\
+                  <style>table {\
+                    width:100%;\
+                  }\
+                  table, th, td {\
+                      border: 1px solid black;\
+                      border: 1px solid black;\
+                  }\
+                  th, td {\
+                      padding: 15px;\
+                      text-align: left;\
+                  }\
+                  table#t01 tr:nth-child(even) {\
+                      background-color: #eee;\
+                  }\
+                  table#t01 tr:nth-child(odd) {\
+                     background-color: #fff;\
+                  }\
+                  table#t01 th {\
+                      background-color: black;\
+                      color: white;\
+                  }\
+                  </style>\
+                  </head>\
+                  <body>";
+    statsPage += "<h1>Server Statistics</h1>";
+    statsPage += "<h2>Miscellaneous</h2>";
+
+    statsPage += "<table id=\"t01\">\
+                  <tr>\
+                    <th>Type</th>\
+                    <th>Number</th> \
+                  </tr>";
+    statsPage += "<tr>\
+                    <td>Received Requests</td>\
+                    <td>";
+    statsPage +=    QString::number( stats.nbReceivedRequests );
+    statsPage += "  </td>\
+                  </tr>";
+    statsPage += "<tr>\
+                    <td>Treated Requests</td>\
+                    <td>";
+    statsPage +=    QString::number( stats.nbTreatedRequests );
+    statsPage += "  </td>\
+                  </tr>";
+    statsPage += "<tr>\
+                    <td>Connected Clients</td>\
+                    <td>";
+    statsPage +=    QString::number( stats.nbConnectedClients );
+    statsPage += "  </td>\
+                  </tr>";
+    statsPage += "<tr>\
+                    <td>Received Bytes</td>\
+                    <td>";
+    statsPage +=    QString::number( stats.nbReceivedBytes );
+    statsPage += "  </td>\
+                  </tr>";
+    statsPage += "<tr>\
+                    <td>Transmitted Bytes</td>\
+                    <td>";
+    statsPage +=    QString::number( stats.nbTransmittedBytes );
+    statsPage += "  </td>\
+                  </tr>";
+    statsPage += "</table>\
+                    <h2>Errors</h2>\
+                      <table id=\"t01\">\
+                        <tr>\
+                          <th>Type</th>\
+                          <th>Number</th>\
+                        </tr>\
+                        <tr>\
+                          <td>404 unknown file or directory</td>\
+                          <td>";
+    statsPage +=          QString::number( stats.nb404Errors );
+    statsPage += "        </td>\
+                        </tr>\
+                        <tr>\
+                          <td>503 service unavailable</td>\
+                          <td>";
+    statsPage +=          QString::number( stats.nb503Errors );
+    statsPage += "        </td>\
+                        </tr>\
+                      </table>";
+    statsPage += "          <h2>Requests</h2>\n";
+    statsPage += "          <ol type=\"1\">\n";
+    for( int i = 0; i < stats.receivedRequests.size(); i++ ){
+        statsPage += "<li>";
+        statsPage += stats.receivedRequests.at( i );
+        statsPage += "</li>\n";
+    }
+    statsPage += "</ol>";
+    statsPage += "  </body>\n";
+    statsPage += "</html>\n";
 }

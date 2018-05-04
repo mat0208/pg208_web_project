@@ -42,6 +42,8 @@
 #include <QTcpServer>
 #include "Response.h"
 #include "Htmlwrapper.h"
+#include "Statistics.h"
+
 
 
 class MySocketServer : public QTcpServer
@@ -50,7 +52,9 @@ Q_OBJECT
 
 public:
         MySocketServer(QObject *parent = 0);
+
         bool pagesAvailable = true;
+        Statistics stats;
 
 private:
         Response response;

@@ -3,7 +3,7 @@
 
 #include <QObject>
 #include <QStringList>
-
+#include "Statistics.h"
 
 
 class HtmlWrapper
@@ -11,14 +11,19 @@ class HtmlWrapper
 public:
     HtmlWrapper();
     unsigned int code;
-    QByteArray page;
+    QByteArray mainPage;
+    QByteArray statsPage;
+    QByteArray infosPage;
     QByteArray fileContent;
     QStringList directories;
     QStringList files;
     QStringList pictures;
     QString errorMsg;
 
-    void buildPage();
+    Statistics stats;
+
+    void buildMainPage();
+    void buildStatsPage();
     void clearLists();
 };
 
