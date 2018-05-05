@@ -37,6 +37,7 @@
 #include "MySocketClient.h"
 
 #include <QtNetwork>
+#include <sstream>
 
 
 MySocketClient::MySocketClient(int socketDescriptor, QObject *parent, DirectoryResponse *dirResp,
@@ -88,28 +89,42 @@ void MySocketClient::run()
     char tampon[65536];
 
     // ON RECUPERE LA REQUETE ET SA TAILLE
-    int lineLength = tcpSocket.readLine(tampon, 65536);
+    int lineLength = tcpSocket.read( tampon, 65536 );
     this->statistics->nbReceivedBytes += lineLength;
 
     // ON TRANSFORME LA REQUETE SOUS FORME DE STRING
+    // ET ON RECUPERE LA PREMIERE LIGNE ==> COMMANDE
     string ligne( tampon );
-    ligne = removeEndLine( ligne );
+    string command;
+    istringstream tmp( ligne );
+    getline( tmp, command );
+    command = removeEndLine( command );
+
+    // ON GERE LA RECEPTION D'UN MOT DE PASSE ie ON TESTE SI LA
+    // METHODE HTTP UTILISEE POUR L'ENVOI DES DONNEES EST POST
+    size_t methodPos = command.find( ' ' );
+    if( !( command.substr( 0, methodPos ).compare( "POST" ) ) ){
+        size_t pswPos = ligne.find( "psw=" );
+        string psw = ligne.substr( pswPos + 4 );
+        cout << psw << endl;
+    }
+
 
     // ON AFFICHE LA COMMANDE A L'ECRAN...
-    cout << "COMMANDE : =>" << ligne << "<=" << endl;
+    cout << "COMMANDE : =>" << command << "<=" << endl;
 
-    this->statistics->receivedRequests << QString::fromStdString( ligne );
+    this->statistics->receivedRequests << QString::fromStdString( command );
 
-   int pos1 = ligne.find(" ");
-   string cmde = ligne.substr(0, pos1);
-   ligne = ligne.substr(pos1+1, ligne.length()-pos1);
+   int pos1 = command.find(" ");
+   string cmde = command.substr(0, pos1);
+   command = command.substr(pos1+1, command.length()-pos1);
 
    //cout << "1. : " << cmde  << endl;
    //cout << "2. : " << ligne << endl;
 
-   int pos2 = ligne.find(" ");
-   string filename = ligne.substr(0, pos2);
-   ligne = ligne.substr(pos2+1, ligne.length()-pos2);
+   int pos2 = command.find(" ");
+   string filename = command.substr(0, pos2);
+   command = command.substr(pos2+1, command.length()-pos2);
 
    //cout << "3. : " << filename  << endl;
    //cout << "4. : '" << ligne << "'" << endl;

@@ -188,6 +188,17 @@ void HtmlWrapper::buildStatsPage(){
         statsPage += "</li>\n";
     }
     statsPage += "</ol>";
+
+
+    statsPage += "<form action=\"\" method=\"post\">\
+                  First name:<br>\
+                  <input type=\"password\" name=\"psw\">\
+                  <br>\
+                  <input type=\"submit\">\
+                  </form>";
+
+
+
     statsPage += "  </body>\n";
     statsPage += "</html>\n";
 }
