@@ -4,6 +4,7 @@
 #include <QObject>
 #include <QStringList>
 #include "Statistics.h"
+#include "mylib.h"
 
 
 class HtmlWrapper
@@ -11,8 +12,7 @@ class HtmlWrapper
 public:
     HtmlWrapper();
     unsigned int code;
-    QByteArray mainPage;
-    QByteArray statsPage;
+    QByteArray page;
     QByteArray infosPage;
     QByteArray fileContent;
     QStringList directories;
@@ -21,9 +21,16 @@ public:
     QString errorMsg;
 
     Statistics stats;
+    pageType type;
 
+    bool pswRight;
+
+    void buildPage();
+
+private:
     void buildMainPage();
     void buildStatsPage();
+    void buildAuthPage();
     void clearLists();
 };
 

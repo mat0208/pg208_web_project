@@ -2,84 +2,83 @@
 
 HtmlWrapper::HtmlWrapper()
 {
+    pswRight = false;
 }
 
 void HtmlWrapper::buildMainPage(){
     switch( code ){
     case 200:
-        mainPage += "HTTP/1.1";
-        mainPage += " 200 ";
-        mainPage += "OK\r\n\r\n";
+        page += "HTTP/1.1";
+        page += " 200 ";
+        page += "OK\r\n\r\n";
         break;
     case 403:
         errorMsg = " ERROR 403 : FORBIDDEN ACCESS ";
-        mainPage += "HTTP/1.1";
-        mainPage += " 403 ";
-        mainPage += "FORBIDDEN\r\n\r\n";
+        page += "HTTP/1.1";
+        page += " 403 ";
+        page += "FORBIDDEN\r\n\r\n";
         break;
     case 404:
         errorMsg = " ERROR 404 : UNKNOWN FILE OR DIRECTORY ";
-        mainPage += "HTTP/1.1";
-        mainPage += " 404 ";
-        mainPage += "NOT FOUND\r\n\r\n";
+        page += "HTTP/1.1";
+        page += " 404 ";
+        page += "NOT FOUND\r\n\r\n";
         break;
     case 503:
         errorMsg = " ERROR 503 : SERVICE UNAVAILABLE ";
-        mainPage += "HTTP/1.1";
-        mainPage += " 503 ";
-        mainPage += "SERVICE UNAVAILABLE\r\n\r\n";
+        page += "HTTP/1.1";
+        page += " 503 ";
+        page += "SERVICE UNAVAILABLE\r\n\r\n";
         break;
     default:
         errorMsg = " ERROR 500 : INTERNAL ERROR ";
-        mainPage += "HTTP/1.1";
-        mainPage += " 500 ";
-        mainPage += "INTERNAL ERROR\r\n\r\n";
+        page += "HTTP/1.1";
+        page += " 500 ";
+        page += "INTERNAL ERROR\r\n\r\n";
         break;
     }
-    mainPage += "<!DOCTYPE HTML>";
-    mainPage += "<html>\n";
+    page += "<!DOCTYPE HTML>";
+    page += "<html>\n";
     if( errorMsg.isEmpty() ){
-        mainPage += " <body>\n";
+        page += " <body>\n";
         if( fileContent.isEmpty() ){
-            mainPage += "<table>\n";
-            mainPage += "<tr><th colspan=\"5\"><hr></th></tr>\n";
+            page += "<table>\n";
+            page += "<tr><th colspan=\"5\"><hr></th></tr>\n";
             for( int i = 0; i < directories.size(); i++ ){
-                mainPage += "<tr><td valign=\"top\"><td><a href=\"";
-                mainPage += directories.at( i );
-                mainPage += "/\">";
-                mainPage += directories.at( i );
-                mainPage += "/</a></td>\n";
+                page += "<tr><td valign=\"top\"><td><a href=\"";
+                page += directories.at( i );
+                page += "/\">";
+                page += directories.at( i );
+                page += "/</a></td>\n";
             }
             for( int i = 0; i < files.size(); i++ ){
-                mainPage += "<tr><td valign=\"top\"><td><a href=\"";
-                mainPage += files.at( i );
-                mainPage += "\">";
-                mainPage += files.at( i );
-                mainPage += "</a></td>\n";
+                page += "<tr><td valign=\"top\"><td><a href=\"";
+                page += files.at( i );
+                page += "\">";
+                page += files.at( i );
+                page += "</a></td>\n";
             }
-            mainPage += "<tr><th colspan=\"5\"><hr></th></tr>\n";
-            mainPage += "</table>\n";
+            page += "<tr><th colspan=\"5\"><hr></th></tr>\n";
+            page += "</table>\n";
         } else{
-            mainPage += "<tr><th colspan=\"5\"><hr></th></tr>\n";
-            mainPage += fileContent;
-            mainPage += "<tr><th colspan=\"5\"><hr></th></tr>\n";
+            page += "<tr><th colspan=\"5\"><hr></th></tr>\n";
+            page += fileContent;
+            page += "<tr><th colspan=\"5\"><hr></th></tr>\n";
         }
     } else{
-        mainPage += "<head>\n";
-        mainPage += "<title>";
-        mainPage += errorMsg;
-        mainPage += "</title>";
-        mainPage += "</head>\n";
-        mainPage += "<body>\n";
-        mainPage += "<h1>";
-        mainPage += errorMsg;
-        mainPage += "</h1>\n";
+        page += "<head>\n";
+        page += "<title>";
+        page += errorMsg;
+        page += "</title>";
+        page += "</head>\n";
+        page += "<body>\n";
+        page += "<h1>";
+        page += errorMsg;
+        page += "</h1>\n";
     }
-    mainPage += "<address>(Ubuntu) Server at 192.168.1.64 Port 8080</address>\n";
-    mainPage += "</body>\n";
-    mainPage += "</html>\n";
-
-    clearLists();
+    page += "<address>(Ubuntu) Server at 192.168.1.64 Port 8080</address>\n";
+    page += "</body>\n";
+    page += "</html>\n";
 }
 
 void HtmlWrapper::clearLists(){
@@ -91,11 +90,11 @@ void HtmlWrapper::clearLists(){
 }
 
 void HtmlWrapper::buildStatsPage(){
-    statsPage += "HTTP/1.1";
-    statsPage += " 200 ";
-    statsPage += "OK\r\n\r\n";
+    page += "HTTP/1.1";
+    page += " 200 ";
+    page += "OK\r\n\r\n";
 
-    statsPage += "<!DOCTYPE html>\
+    page += "<!DOCTYPE html>\
                   <html>\
                   <head>\
                   <style>table {\
@@ -122,45 +121,45 @@ void HtmlWrapper::buildStatsPage(){
                   </style>\
                   </head>\
                   <body>";
-    statsPage += "<h1>Server Statistics</h1>";
-    statsPage += "<h2>Miscellaneous</h2>";
+    page += "<h1>Server Statistics</h1>";
+    page += "<h2>Miscellaneous</h2>";
 
-    statsPage += "<table id=\"t01\">\
+    page += "<table id=\"t01\">\
                   <tr>\
                     <th>Type</th>\
                     <th>Number</th> \
                   </tr>";
-    statsPage += "<tr>\
+    page += "<tr>\
                     <td>Received Requests</td>\
                     <td>";
-    statsPage +=    QString::number( stats.nbReceivedRequests );
-    statsPage += "  </td>\
+    page +=    QString::number( stats.nbReceivedRequests );
+    page += "  </td>\
                   </tr>";
-    statsPage += "<tr>\
+    page += "<tr>\
                     <td>Treated Requests</td>\
                     <td>";
-    statsPage +=    QString::number( stats.nbTreatedRequests );
-    statsPage += "  </td>\
+    page +=    QString::number( stats.nbTreatedRequests );
+    page += "  </td>\
                   </tr>";
-    statsPage += "<tr>\
+    page += "<tr>\
                     <td>Connected Clients</td>\
                     <td>";
-    statsPage +=    QString::number( stats.nbConnectedClients );
-    statsPage += "  </td>\
+    page +=    QString::number( stats.nbConnectedClients );
+    page += "  </td>\
                   </tr>";
-    statsPage += "<tr>\
+    page += "<tr>\
                     <td>Received Bytes</td>\
                     <td>";
-    statsPage +=    QString::number( stats.nbReceivedBytes );
-    statsPage += "  </td>\
+    page +=    QString::number( stats.nbReceivedBytes );
+    page += "  </td>\
                   </tr>";
-    statsPage += "<tr>\
+    page += "<tr>\
                     <td>Transmitted Bytes</td>\
                     <td>";
-    statsPage +=    QString::number( stats.nbTransmittedBytes );
-    statsPage += "  </td>\
+    page +=    QString::number( stats.nbTransmittedBytes );
+    page += "  </td>\
                   </tr>";
-    statsPage += "</table>\
+    page += "</table>\
                     <h2>Errors</h2>\
                       <table id=\"t01\">\
                         <tr>\
@@ -170,35 +169,59 @@ void HtmlWrapper::buildStatsPage(){
                         <tr>\
                           <td>404 unknown file or directory</td>\
                           <td>";
-    statsPage +=          QString::number( stats.nb404Errors );
-    statsPage += "        </td>\
+    page +=          QString::number( stats.nb404Errors );
+    page += "        </td>\
                         </tr>\
                         <tr>\
                           <td>503 service unavailable</td>\
                           <td>";
-    statsPage +=          QString::number( stats.nb503Errors );
-    statsPage += "        </td>\
+    page +=          QString::number( stats.nb503Errors );
+    page += "        </td>\
                         </tr>\
                       </table>";
-    statsPage += "          <h2>Requests</h2>\n";
-    statsPage += "          <ol type=\"1\">\n";
+    page += "          <h2>Requests</h2>\n";
+    page += "          <ol type=\"1\">\n";
     for( int i = 0; i < stats.receivedRequests.size(); i++ ){
-        statsPage += "<li>";
-        statsPage += stats.receivedRequests.at( i );
-        statsPage += "</li>\n";
+        page += "<li>";
+        page += stats.receivedRequests.at( i );
+        page += "</li>\n";
     }
-    statsPage += "</ol>";
+    page += "</ol>";
+    page += "  </body>\n";
+    page += "</html>\n";
+}
 
+void HtmlWrapper::buildAuthPage(){
+    page += "HTTP/1.1";
+    page += " 200 ";
+    page += "OK\r\n\r\n";
 
-    statsPage += "<form action=\"\" method=\"post\">\
-                  First name:<br>\
-                  <input type=\"password\" name=\"psw\">\
-                  <br>\
-                  <input type=\"submit\">\
-                  </form>";
+    page += "<!DOCTYPE html>\
+                  <html>\
+                  <body>\
+                    <h2>Password Required to access private page</h2>";
 
+    page += "<form action=\"\" method=\"post\">\
+                      Password:<br>\
+                      <input type=\"password\" name=\"psw\">\
+                      <br>\
+                      <input type=\"submit\">\
+                    </form>";
+    if( !( errorMsg.isEmpty() ) ){
+        page += errorMsg;
+    }
 
+    page += "</body>\
+             </html>";
+}
 
-    statsPage += "  </body>\n";
-    statsPage += "</html>\n";
+void HtmlWrapper::buildPage(){
+    if( type == mainPage )
+        buildMainPage();
+    else if( type == statsPage )
+        buildStatsPage();
+    else if( type == authPage )
+        buildAuthPage();
+
+    clearLists();
 }

@@ -16,16 +16,16 @@ void DirectoryResponse::listDir( QDir dir, MySocketClient *client )
     dirList = dir.entryList();
     cout << dirList.size() << endl;
     for (int i = 0; i < dirList.size(); ++i){
-        client->htmlResponse->directories += dirList.at(i);
+        client->htmlWrap->directories += dirList.at(i);
     }
 
     dir.setFilter( dir.Files );
     dirList = dir.entryList();
     cout << dirList.size() << endl;
     for (int i = 0; i < dirList.size(); ++i){
-        client->htmlResponse->files += dirList.at(i);
+        client->htmlWrap->files += dirList.at(i);
     }
-    client->htmlResponse->code = 200;
+    client->htmlWrap->code = 200;
 }
 
 
@@ -36,8 +36,8 @@ FileResponse::FileResponse()
 
 void FileResponse::readFile(QFile *file, MySocketClient *client)
 {
-    client->htmlResponse->fileContent += file->readAll();
-    client->htmlResponse->code = 200;
+    client->htmlWrap->fileContent += file->readAll();
+    client->htmlWrap->code = 200;
 }
 
 ErrorResponse::ErrorResponse()
@@ -47,6 +47,6 @@ ErrorResponse::ErrorResponse()
 void ErrorResponse::printError( unsigned int errorType, MySocketClient *client  )
 {
     if( errorType == 404 ){
-        client->htmlResponse->code = 404;
+        client->htmlWrap->code = 404;
     }
 }

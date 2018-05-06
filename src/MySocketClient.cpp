@@ -48,7 +48,7 @@ MySocketClient::MySocketClient(int socketDescriptor, QObject *parent, DirectoryR
     dirResponse    = dirResp;
     fileResponse   = fileResp;
     errorResponse  = errorResp;
-    htmlResponse   = htmlResp;
+    htmlWrap       = htmlResp;
     statistics     = stats;
     pagesAvailable = serverAvailable;
 }
@@ -65,7 +65,7 @@ void MySocketClient::run()
 {
     cout << "Starting MySocketClient::run()" << endl;
 
-    this->statistics->nbReceivedRequests ++;
+    statistics->nbReceivedRequests ++;
 
     QTcpSocket tcpSocket;
 
@@ -90,7 +90,7 @@ void MySocketClient::run()
 
     // ON RECUPERE LA REQUETE ET SA TAILLE
     int lineLength = tcpSocket.read( tampon, 65536 );
-    this->statistics->nbReceivedBytes += lineLength;
+    statistics->nbReceivedBytes += lineLength;
 
     // ON TRANSFORME LA REQUETE SOUS FORME DE STRING
     // ET ON RECUPERE LA PREMIERE LIGNE ==> COMMANDE
@@ -100,20 +100,25 @@ void MySocketClient::run()
     getline( tmp, command );
     command = removeEndLine( command );
 
+    // ON AFFICHE LA COMMANDE A L'ECRAN...
+    cout << "COMMANDE : =>" << command << "<=" << endl;
+
+    statistics->receivedRequests << QString::fromStdString( command );
+
     // ON GERE LA RECEPTION D'UN MOT DE PASSE ie ON TESTE SI LA
     // METHODE HTTP UTILISEE POUR L'ENVOI DES DONNEES EST POST
     size_t methodPos = command.find( ' ' );
     if( !( command.substr( 0, methodPos ).compare( "POST" ) ) ){
         size_t pswPos = ligne.find( "psw=" );
         string psw = ligne.substr( pswPos + 4 );
-        cout << psw << endl;
+        if( psw == "admin" ){
+            htmlWrap->pswRight = true;
+        } else{
+            htmlWrap->pswRight = false;
+            htmlWrap->errorMsg = QString::fromStdString( "Incorrect password" );
+            htmlWrap->type = mainPage;
+        }
     }
-
-
-    // ON AFFICHE LA COMMANDE A L'ECRAN...
-    cout << "COMMANDE : =>" << command << "<=" << endl;
-
-    this->statistics->receivedRequests << QString::fromStdString( command );
 
    int pos1 = command.find(" ");
    string cmde = command.substr(0, pos1);
@@ -139,7 +144,6 @@ void MySocketClient::run()
     }*/
 
    QString str = tr("/home/mat0208lt/Desktop/http_server/pg208_web_project/public_html") + tr(filename.c_str());
-   //QString str = tr("public_html") + tr(file.c_str());
    QFile f( str );
    QDir  d( str );
 
@@ -148,24 +152,37 @@ void MySocketClient::run()
    cout << " - isDirectory       : " << d.exists() << endl;
 
    if( f.exists() == false &&  d.exists() == false ){
-       this->errorResponse->printError( 404, this );
-       this->statistics->nb404Errors ++;
+       errorResponse->printError( 404, this );
+       htmlWrap->type = mainPage;
+       statistics->nb404Errors ++;
    }else if( d.exists() == true ){
-       if( *pagesAvailable || !filename.compare( "/" ) || !filename.compare( "/private/" ) ){
-           this->dirResponse->listDir( d, this );
+       if( !filename.compare( "/private/" ) && !( htmlWrap->pswRight ) ){
+           htmlWrap->type = authPage;
+       } else if( !filename.compare( "/private/" ) && htmlWrap->pswRight ){
+           htmlWrap->pswRight = false;
+           dirResponse->listDir( d, this );
+           htmlWrap->type = mainPage;
+       } else if( *pagesAvailable || !filename.compare( "/" ) ){
+           dirResponse->listDir( d, this );
+           htmlWrap->type = mainPage;
        } else{
-           this->htmlResponse->code = 503;
-           this->statistics->nb503Errors ++;
+           htmlWrap->code = 503;
+           htmlWrap->type = mainPage;
+           statistics->nb503Errors ++;
        }
 
    }else if( f.exists() == true ){
         if( !filename.compare( "/private/desactivate.html" ) ){
             *pagesAvailable = false;
-            this->htmlResponse->errorMsg = "Server disabled";
-        }
-        else if( !filename.compare( "/private/activate.html" ) ){
+            htmlWrap->errorMsg = "Server disabled";
+            htmlWrap->type = mainPage;
+        } else if( !filename.compare( "/private/activate.html" ) ){
             *pagesAvailable = true;
-            this->htmlResponse->errorMsg = "Server enabled";
+            htmlWrap->errorMsg = "Server enabled";
+            htmlWrap->type = mainPage;
+        } else if( !filename.compare( "/private/statistics.html" ) ){
+            htmlWrap->stats = *statistics;
+            htmlWrap->type = statsPage;
         }
         if( *pagesAvailable ){
             QFile* file = new QFile( str );
@@ -174,29 +191,32 @@ void MySocketClient::run()
                      delete file;
                      return;
              }
-            this->fileResponse->readFile( file, this );
+            fileResponse->readFile( file, this );
             file->close();
-        } else if( filename.compare( "/private/activate.html" ) ){
+        } else if( filename.compare( "/private/statistics.html" ) ){
+            htmlWrap->type = mainPage;
         } else{
-            this->htmlResponse->code = 503;
-            this->statistics->nb503Errors ++;
+            htmlWrap->code = 503;
+            htmlWrap->type = mainPage;
+            statistics->nb503Errors ++;
         }
-
-   }else{
-
    }
 
-   if( !filename.compare( "/private/statistics.html" ) ){
-       this->htmlResponse->stats = *(this->statistics);
-       this->htmlResponse->buildStatsPage();
-       this->statistics->nbTransmittedBytes += tcpSocket.write( this->htmlResponse->statsPage );
-       this->htmlResponse->statsPage.clear();
+
+   /*if( !filename.compare( "/private/statistics.html" ) ){
+       htmlWrap->stats = *statistics;
+       htmlWrap->buildStatsPage();
+       statistics->nbTransmittedBytes += tcpSocket.write( htmlWrap->statsPage );
+       htmlWrap->statsPage.clear();
    } else{
-       this->htmlResponse->buildMainPage();
-       this->statistics->nbTransmittedBytes += tcpSocket.write( this->htmlResponse->mainPage );
-       this->htmlResponse->mainPage.clear();
-   }
+       htmlWrap->buildMainPage();
+       statistics->nbTransmittedBytes += tcpSocket.write( htmlWrap->mainPage );
+       htmlWrap->mainPage.clear();
+   }*/
 
+   htmlWrap->buildPage();
+   statistics->nbTransmittedBytes += tcpSocket.write( htmlWrap->page );
+   htmlWrap->page.clear();
 
    tcpSocket.disconnectFromHost();
    tcpSocket.waitForDisconnected();

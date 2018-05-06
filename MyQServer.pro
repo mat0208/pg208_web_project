@@ -18,7 +18,8 @@ HEADERS += ./src/MySocketServer.h \
     ./src/dialog.h \
     src/Response.h \
     src/Htmlwrapper.h \
-    src/Statistics.h
+    src/Statistics.h \
+    src/mylib.h
 
 OTHER_FILES += MyQServer.pro
 CONFIG += c++11

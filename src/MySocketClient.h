@@ -64,7 +64,7 @@ public:
 
     void run();
 
-    HtmlWrapper *htmlResponse;
+    HtmlWrapper *htmlWrap;
     Statistics *statistics;
     bool *pagesAvailable;
 
